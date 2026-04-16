@@ -25,3 +25,23 @@ The `Kratos_Deltares_ROM` branch re-enables these calculations, which are curren
 ## 📂 Project Structure
 
 - **[Piping/Piping_step_0.1](Piping/Piping_step_0.1/)**: Initial implementation of the piping ROM workflow.
+- **[C-Phi/C-Phi_reduction_process](C-Phi/C-Phi_reduction_process/)**: Basic verification test for the $c-\phi$ reduction algorithm.
+- **[C-Phi/Plaxis_CPhi_Benchmark](C-Phi/Plaxis_CPhi_Benchmark/)**: Advanced benchmark using a PLAXIS mesh and U_Pw solver.
+
+
+<!-- 
+NOTE ON PLAXIS BENCHMARK:
+Stage 2 in this folder originally required 'example64.dll' (a Windows-only UDSM). 
+To ensure compatibility with Linux/Kratos_Deltares_ROM, the material law was swapped 
+to the native Kratos 'GeoMohrCoulombWithTensionCutOff2D' while preserving 
+identical physical parameters. The DLL is only required for strict 1:1 numerical 
+verification against PLAXIS.
+-->
+
+
+## 📚 Learning Resources
+
+If you are new to the Kratos ROM application, you can follow these comprehensive resources:
+
+- **Step-by-Step Tutorial**: [Kratos ROM Tutorial Repository](https://github.com/SADPR/Kratos_ROM_Tutorial)
+- **Video Series**: [Kratos ROM Tutorial YouTube Playlist](https://youtube.com/playlist?list=PLJZAo1kyATsUA8U4hex36P4HLAr0KJWH_&si=sOpA-_IfUJdfTpMV)
