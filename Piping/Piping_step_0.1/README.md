@@ -2,13 +2,13 @@
 
 This project implements a **Reduced Order Model (ROM)** workflow for steady-state **Backward Erosion Piping** simulations using Kratos Multiphysics. It automates the process of data collection, model reduction (POD), and predictive testing across a parameter space (Permeability and $d_{70}$).
 
-![Project Overview](/home/kratos/Deltares_ROM/Piping/Piping_step_0.1/docs/images/page_01-01.png)
+![Project Overview](docs/images/page_01-01.png)
 
 ## 🌊 Problem Description: Backward Erosion Piping
 
 Backward erosion piping is a major failure mechanism for hydraulic structures such as dikes and dams. It occurs when water seepage through the foundation soil carries particles away, creating a "pipe" from the downstream exit towards the upstream side.
 
-![Dike and Soil Geometry](/home/kratos/Deltares_ROM/Piping/Piping_step_0.1/docs/images/page_12-12.png)
+![Dike and Soil Geometry](docs/images/page_12-12.png)
 
 ### Key Parameters ($\mu$)
 The simulation explores how the critical head (failure point) changes based on:
@@ -16,7 +16,7 @@ The simulation explores how the critical head (failure point) changes based on:
 *   **Grain Size ($d_{70}$)**: The characteristic particle size of the soil.
 *   **Water Head ($H$)**: The loading parameter increased during the sweep.
 
-![Parameter Space](/home/kratos/Deltares_ROM/Piping/Piping_step_0.1/docs/images/page_13-13.png)
+![Parameter Space](docs/images/page_13-13.png)
 
 ## 🧠 Computational Logic: FOM vs ROM
 
@@ -24,7 +24,7 @@ The project compares two execution modes:
 1.  **Full Order Model (FOM)**: The standard FEM solution using `GeoMechanicsApplication`. It tracks the pipe development until it traverses the entire geometry.
 2.  **Reduced Order Model (ROM)**: A fast surrogate using `RomApplication`. It uses a **Residual Error Indicator** to stop when the approximation can no longer capture the complex non-linear physics of the piping process.
 
-![FOM vs ROM Algorithms](/home/kratos/Deltares_ROM/Piping/Piping_step_0.1/docs/images/page_36-36.png)
+![FOM vs ROM Algorithms](docs/images/page_36-36.png)
 
 
 ## 🚀 Key Components
