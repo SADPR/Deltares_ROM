@@ -1,0 +1,16 @@
+# Data snapshots (large binaries)
+*.npy
+
+# Generated simulation data and metadata inside rom_data folders
+# This avoids committing results while preserving configuration files like ProjectParameters.json
+**/rom_data/**/*.json
+
+# Python byte-code
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Figures and reports (optional, but often good to ignore if generated)
+# **/figures/*.png
+# **/reports/*.json
