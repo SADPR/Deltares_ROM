@@ -75,7 +75,28 @@ Set these to `True` or `False` to toggle entire stages of the workflow.
 - **POD Basis**: Stored in `rom_data/staged_piping/pod/`.
 - **Figures**: Comparison plots are saved in the `figures/` directory.
 
+## 🛠 Prerequisites: Required Kratos Branch
+
+To run these simulations, you must compile Kratos from the following specialized branch:
+[Kratos_Deltares_ROM](https://github.com/KratosMultiphysics/Kratos/tree/Kratos_Deltares_ROM)
+
+### Why is this branch necessary?
+This project relies on accurate **Residual Norm** calculations to drive the ROM Error Indicator. In the standard Kratos `master` repository, the calculation of the Right-Hand Side (RHS) in certain solvers was disabled to improve performance. 
+
+As noted by Pooyan in the source code:
+> **NOTE:** The following part will be commented because it is time consuming and there is no obvious reason to be here. If someone needs this part please notify the community via mailing list before uncommenting it.
+
+```cpp
+{
+    // TSparseSpace::SetToZero(mb);
+    // p_builder_and_solver->BuildRHS(p_scheme, r_model_part, mb);
+}
+```
+
+The `Kratos_Deltares_ROM` branch re-enables these calculations, which are essential for computing the residuals needed to assess ROM stability and accuracy in piping simulations.
+
 ## 💻 How to Run
+
 Ensure you have Kratos Multiphysics and the `RomApplication` installed, then run:
 ```bash
 python launch_rom.py
