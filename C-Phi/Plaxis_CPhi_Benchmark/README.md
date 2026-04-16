@@ -34,3 +34,34 @@ Using `example64.dll` forces Kratos to calculate the soil stresses using the exa
 Since Kratos has its own mathematically equivalent native `Mohr-Coulomb` formulation, bypassing the DLL does not change the physics of the problem; it simply processes the mathematics using Kratos's internal C++ code rather than PLAXIS's Fortran code.
 
 If strict verification against PLAXIS is required in the future, the code must be provided with the Linux-compiled version of the library (`.so` format) instead of the Windows `.dll`.
+
+---
+
+## 🧠 Understanding the C-Phi Reduction Algorithm
+
+The **Strength Reduction Method** algorithm calculates the Factor of Safety (FoS) of a structure by systematically weakening the soil until numerical convergence fails (representing a physical landslide or collapse).
+
+### The Math
+Under the Mohr-Coulomb failure model, soil resists collapsing due to two primary strengths:
+1. **Cohesion ($c$)**
+2. **Friction Angle ($\phi$)**
+
+The reduction is driven by a multiplier called the **Reduction Factor ($R$)**, where the **Factor of Safety ($FoS$)** is the inverse: 
+$$ FoS = \frac{1}{R} $$
+
+### Step-by-Step Logic
+Assume the soil has an initial real cohesion of $c_0 = 10,000$ Pa and friction angle of $\phi_0 = 35^\circ$.
+
+1. **Iteration 0 (Baseline)**: $R = 1.0$. The simulated soil retains 100% of its strength. The system is naturally stable under gravity.
+2. **Iteration 1**: The solver drops the reduction factor (e.g., $R = 0.9$). 
+   Kratos injects *fictitious, weakened* values into the finite element model:
+   $$ c_{new} = c_0 \times R = 10,000 \times 0.9 = 9,000 \text{ Pa} $$
+   $$ \tan(\phi_{new}) = \tan(\phi_0) \times R $$
+   The solver checks if the gravity load can still be supported by this $9,000$ Pa soil. If it converges, the structure is still mathematically "safe".
+3. **Iteration N (Failure)**: The solver continues iterating downward ($R = 0.8, 0.7, \dots$). 
+   Eventually, it reaches a threshold where the material is too weak:
+   $$ c_{new} = c_0 \times R = 10,000 \times 0.4 = 4,000 \text{ Pa} $$
+   At this point, the mathematical equilibrium matrices diverge (Error/No Convergence). Physically, a slip surface has formed, and the displacements run off to infinity.
+4. **The Verdict**: The very last stable $R$ value before the collapse is retrieved. If the structure collapsed at $R=0.4$ but was completely stable at $R=0.5$, then the soil is handling the loads at exactly *half* of its actual strength capacity. Therefore, the engineer determines:
+   $$ FoS = \frac{1}{0.5} = 2.0 $$
+
