@@ -79,3 +79,35 @@ Imagine you build a brick wall weighing 100 kg, and it rests on a wooden table. 
 
 If the math shows the "virtual table" had to be made 1.5 times weaker before it broke under the normal 100 kg load, you conclude your actual wooden table is 1.5 times stronger than it strictly needs to be. This is exactly what Kratos and PLAXIS do to the soil's $c$ and $\phi$ parameters.
 
+
+### 3. Current Linux workaround for `example64.so`
+The Stage 2 setup is currently restored to use UDSM (`SmallStrainUDSM2DPlaneStrainLaw`) with:
+
+- `UDSM_NAME: "./example64.so"`
+
+In Linux this explicit relative path is important, because `dlopen("example64.so")` does not reliably search the current working directory.
+
+#### Known runtime issue
+In this folder, `example64.so` may fail to load with:
+
+- `undefined symbol: show_extra_info_`
+
+This means the shared library was built expecting an additional symbol that is not present at runtime.
+
+#### Temporary workaround (for running now)
+Use a tiny preload shim that defines `show_extra_info_`:
+
+```bash
+cat > /tmp/show_extra_stub.c <<'EOC'
+void show_extra_info_(void) {}
+EOC
+gcc -shared -fPIC -o /tmp/libshow_extra_stub.so /tmp/show_extra_stub.c
+
+cd /home/kratos/Deltares_ROM/C-Phi/Plaxis_CPhi_Benchmark
+LD_PRELOAD=/tmp/libshow_extra_stub.so \
+PYTHONPATH=/home/kratos/Kratos_Deltares/bin/Release:${PYTHONPATH} \
+python3 Kratos_stages.py
+```
+
+#### Clean long-term fix
+Rebuild or provide `example64.so` so it exports or links the missing symbol (`show_extra_info_`) directly, without requiring `LD_PRELOAD`.

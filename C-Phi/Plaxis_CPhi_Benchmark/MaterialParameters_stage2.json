@@ -4,7 +4,7 @@
       "properties_id":           1,
       "Material": {
           "constitutive_law": {
-              "name"             :  "GeoMohrCoulombWithTensionCutOff2D" 
+              "name"             :  "SmallStrainUDSM2DPlaneStrainLaw" 
           },
           "Variables": {
               "IGNORE_UNDRAINED"         :  true,
@@ -17,12 +17,18 @@
               "PERMEABILITY_YY"          :  4.5e-13,
               "PERMEABILITY_XY"          :  0.0,
               "DYNAMIC_VISCOSITY"        :  8.90e-7,
-              "YOUNG_MODULUS"            :  5.384615e6,
-              "POISSON_RATIO"            :  0.3,
-              "GEO_COHESION"             :  10000.0,
-              "GEO_FRICTION_ANGLE"       :  35.0,
-              "GEO_TENSILE_STRENGTH"     :  1.0e-3,
-              "GEO_DILATANCY_ANGLE"      :  0.0,
+              "UDSM_NAME"                :  "./example64.so",
+              "UDSM_NUMBER"              :  2,
+              "IS_FORTRAN_UDSM"          :  true,
+              "INDEX_OF_UMAT_PHI_PARAMETER": 4,
+              "INDEX_OF_UMAT_C_PARAMETER":   3,
+              "UMAT_PARAMETERS"          :  [ 5.384615e6,
+                                              0.3,
+                                              10000.0,
+                                              35.0,
+                                              0.0,
+                                              0.0  ],
+              "STATE_VARIABLES"          :  [],
               "BIOT_COEFFICIENT"         :  1.0,
               "RETENTION_LAW"                    : "SaturatedLaw",
               "SATURATED_SATURATION"             :  1.0,
