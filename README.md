@@ -24,9 +24,15 @@ The `Kratos_Deltares_ROM` branch re-enables these calculations, which are curren
 
 ## 📂 Project Structure
 
-- **[Piping/Piping_step_0.1](Piping/Piping_step_0.1/)**: Initial implementation of the piping ROM workflow.
-- **[C-Phi/C-Phi_reduction_process](C-Phi/C-Phi_reduction_process/)**: Basic verification test for the $c-\phi$ reduction algorithm.
+### 🌊 Piping Projects
+- **[Piping/Piping_ROM_JSON](Piping/Piping_ROM_JSON/)**: Legacy implementation using hash-based JSON storage.
+- **[Piping/Piping_ROM_Manager_SQL](Piping/Piping_ROM_Manager_SQL/)**: Version utilizing the SQL-based ROM Manager (Raul's modifications).
+- **[Piping/Piping_ROM_Staged](Piping/Piping_ROM_Staged/)**: New transparent architecture with stage-based directory storage and human-readable filenames.
+
+### 🏔 C-Phi Projects
+- **[C-Phi/Plaxis_CPhi_ROM_Staged](C-Phi/Plaxis_CPhi_ROM_Staged/)**: ROM implementation for Strength Reduction using the Staged architecture.
 - **[C-Phi/Plaxis_CPhi_Benchmark](C-Phi/Plaxis_CPhi_Benchmark/)**: Advanced benchmark using a PLAXIS mesh and U_Pw solver.
+- **[C-Phi/C-Phi_reduction_process](C-Phi/C-Phi_reduction_process/)**: Basic verification test for the $c-\phi$ reduction algorithm.
 
 
 <!-- 

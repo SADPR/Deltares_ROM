@@ -1,0 +1,137 @@
+{
+    "properties": [
+        {
+            "properties_id": 0,
+            "model_part_name": "PorousDomain.Soil-0",
+            "Material": {
+                "constitutive_law": {
+                    "name": "GeoLinearElasticPlaneStrain2DLaw"
+                },
+                "Variables": {
+                    "IGNORE_UNDRAINED": false,
+                    "BIOT_COEFFICIENT": 1.0,
+                    "YOUNG_MODULUS": 10000,
+                    "POISSON_RATIO": 0.2,
+                    "DENSITY_SOLID": 2650,
+                    "DENSITY_WATER": 1000,
+                    "POROSITY": 0.3,
+                    "BULK_MODULUS_SOLID": 20000000000.0,
+                    "BULK_MODULUS_FLUID": 2200000000.0,
+                    "PERMEABILITY_XX": 5.873907044945213e-12,
+                    "PERMEABILITY_YY": 7.668856420130631e-12,
+                    "PERMEABILITY_XY": 0.0,
+                    "DYNAMIC_VISCOSITY": 0.0013,
+                    "THICKNESS": 1.0,
+                    "RETENTION_LAW": "SaturatedLaw",
+                    "SATURATED_SATURATION": 1.0,
+                    "RESIDUAL_SATURATION": 0.06203,
+                    "VAN_GENUCHTEN_AIR_ENTRY_PRESSURE": 2.561,
+                    "VAN_GENUCHTEN_GN": 1.377,
+                    "VAN_GENUCHTEN_GL": 1.25,
+                    "MINIMUM_RELATIVE_PERMEABILITY": 0.0001
+                }
+            }
+        },
+        {
+            "properties_id": 2,
+            "model_part_name": "PorousDomain.Soil-2",
+            "Material": {
+                "constitutive_law": {
+                    "name": "GeoLinearElasticPlaneStrain2DLaw"
+                },
+                "Variables": {
+                    "IGNORE_UNDRAINED": false,
+                    "BIOT_COEFFICIENT": 1.0,
+                    "YOUNG_MODULUS": 10000,
+                    "POISSON_RATIO": 0.2,
+                    "DENSITY_SOLID": 2650,
+                    "DENSITY_WATER": 1000,
+                    "POROSITY": 0.3,
+                    "BULK_MODULUS_SOLID": 20000000000.0,
+                    "BULK_MODULUS_FLUID": 2200000000.0,
+                    "PERMEABILITY_XX": 5.873907044945213e-12,
+                    "PERMEABILITY_YY": 1.5337712840261257e-12,
+                    "PERMEABILITY_XY": 0.0,
+                    "DYNAMIC_VISCOSITY": 0.0013,
+                    "THICKNESS": 1.0,
+                    "RETENTION_LAW": "SaturatedLaw",
+                    "SATURATED_SATURATION": 1.0,
+                    "RESIDUAL_SATURATION": 0.06203,
+                    "VAN_GENUCHTEN_AIR_ENTRY_PRESSURE": 2.561,
+                    "VAN_GENUCHTEN_GN": 1.377,
+                    "VAN_GENUCHTEN_GL": 1.25,
+                    "MINIMUM_RELATIVE_PERMEABILITY": 0.0001
+                }
+            }
+        },
+        {
+            "properties_id": 4,
+            "model_part_name": "PorousDomain.Soil-4",
+            "Material": {
+                "constitutive_law": {
+                    "name": "GeoLinearElasticPlaneStrain2DLaw"
+                },
+                "Variables": {
+                    "IGNORE_UNDRAINED": false,
+                    "BIOT_COEFFICIENT": 1.0,
+                    "YOUNG_MODULUS": 10000,
+                    "POISSON_RATIO": 0.2,
+                    "DENSITY_SOLID": 2650,
+                    "DENSITY_WATER": 1000,
+                    "POROSITY": 0.3,
+                    "BULK_MODULUS_SOLID": 20000000000.0,
+                    "BULK_MODULUS_FLUID": 2200000000.0,
+                    "PERMEABILITY_XX": 4.601313852078378e-15,
+                    "PERMEABILITY_YY": 4.601313852078378e-15,
+                    "PERMEABILITY_XY": 0.0,
+                    "DYNAMIC_VISCOSITY": 0.0013,
+                    "THICKNESS": 1.0,
+                    "RETENTION_LAW": "SaturatedLaw",
+                    "SATURATED_SATURATION": 1.0,
+                    "RESIDUAL_SATURATION": 0.06203,
+                    "VAN_GENUCHTEN_AIR_ENTRY_PRESSURE": 2.561,
+                    "VAN_GENUCHTEN_GN": 1.377,
+                    "VAN_GENUCHTEN_GL": 1.25,
+                    "MINIMUM_RELATIVE_PERMEABILITY": 0.0001
+                }
+            }
+        },
+        {
+            "properties_id": 6,
+            "model_part_name": "PorousDomain.2",
+            "Material": {
+                "constitutive_law": {
+                    "name": "LinearElastic2DInterfaceLaw"
+                },
+                "Variables": {
+                    "BIOT_COEFFICIENT": 1.0,
+                    "YOUNG_MODULUS": 100000,
+                    "POISSON_RATIO": 0.45,
+                    "DENSITY_SOLID": 2650,
+                    "DENSITY_WATER": 1000,
+                    "POROSITY": 0.3,
+                    "BULK_MODULUS_SOLID": 20000000000.0,
+                    "BULK_MODULUS_FLUID": 2200000000.0,
+                    "DYNAMIC_VISCOSITY": 0.0013,
+                    "THICKNESS": 1.0,
+                    "RETENTION_LAW": "SaturatedLaw",
+                    "SATURATED_SATURATION": 1.0,
+                    "RESIDUAL_SATURATION": 0.06203,
+                    "VAN_GENUCHTEN_AIR_ENTRY_PRESSURE": 2.561,
+                    "VAN_GENUCHTEN_GN": 1.377,
+                    "VAN_GENUCHTEN_GL": 1.25,
+                    "MINIMUM_JOINT_WIDTH": 0.001,
+                    "PIPE_D_70": 0.00013103637162464776,
+                    "PIPE_ETA": 0.25,
+                    "PIPE_THETA": 37,
+                    "PIPE_START_ELEMENT": 1228,
+                    "PIPE_MODIFIED_D": true,
+                    "PIPE_MODEL_FACTOR": 0.89,
+                    "PIPE_HEIGHT": 0.0,
+                    "TRANSVERSAL_PERMEABILITY": 1e-08,
+                    "MINIMUM_RELATIVE_PERMEABILITY": 0.0001
+                }
+            }
+        }
+    ]
+}

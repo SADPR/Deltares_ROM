@@ -38,8 +38,8 @@ The main entry point. It orchestrates the entire workflow through a series of "S
 ### 2. `custom_rom_manager.py`
 A specialized ROM manager tailored for the Deltares piping problem.
 - **Head Sweep**: Implements a steady-state sweep of water pressure (Head) instead of a simple time-transient.
-- **Staged Caching**: Uses a robust hashing system to cache snapshots and results. If you run a case twice with the same parameters, it will load the results from disk instead of re-computing.
-- **Storage**: Manages snapshots, POD bases, and QoIs in a structured folder hierarchy.
+- **Transparent Storage**: Uses human-readable, stage-based directories. If you run a case twice with the same parameters, it identifies the existing files by their names (e.g., `fom_k4.0e-12_d6.1e-05.npy`) instead of using complex hashes.
+- **Storage**: Manages snapshots, POD bases, and QoIs in a structured folder hierarchy (`rom_data/stage1_fom`, etc.).
 
 ---
 
@@ -71,9 +71,16 @@ Set these to `True` or `False` to toggle entire stages of the workflow.
 ---
 
 ## 📊 Data & Results
-- **Snapshots**: Saved as `.npy` files in `rom_data/staged_piping/fom/` and `rom_data/staged_piping/rom/`.
-- **POD Basis**: Stored in `rom_data/staged_piping/pod/`.
-- **Figures**: Comparison plots are saved in the `figures/` directory.
+The project uses a **Transparent Architecture** located in `rom_data/`:
+- **`stage1_fom/`**: Training ground truth snapshots (`fom_k...npy`) and Quantities of Interest (`qoi_...json`).
+- **`stage2_pod/`**: The generated POD basis (`basis.npy`, `basis.json`, `NodeIds.npy`).
+- **`stage3_rom/`**: ROM verification results for comparison against training data.
+- **`stage4_test/`**: Predictive results for unseen test parameters.
+- **`reports/`**: JSON summaries of errors and simulation statistics for each stage.
+
+### Filename Convention
+Files are named using a consistent `_MuToken` based on the physics parameters:
+`fom_k<permeability>_d<grain_size>.npy`
 
 ## 🛠 Prerequisites: Required Kratos Branch
 

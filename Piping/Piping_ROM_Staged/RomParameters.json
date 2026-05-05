@@ -1,0 +1,13 @@
+{
+    "rom_settings": {
+        "rom_bns_settings": {
+            "monotonicity_preserving": false
+        }
+    },
+    "projection_strategy": "galerkin",
+    "assembling_strategy": "global",
+    "rom_basis_output_name": "basis",
+    "rom_basis_output_folder": "rom_data/stage2_pod",
+    "train_hrom": false,
+    "run_hrom": false
+}
