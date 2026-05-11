@@ -181,7 +181,7 @@ if __name__ == "__main__":
     SINGLE_POINT_MODE = True
     SINGLE_CPHI_PAIR = [10000.0, 35.0]
 
-    RUN_STAGE0 = False
+    RUN_STAGE0 = True
     RUN_STAGE1 = True
     RUN_STAGE2 = True
     RUN_STAGE3 = True
