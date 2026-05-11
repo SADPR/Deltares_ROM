@@ -14,3 +14,9 @@ __pycache__/
 # Figures and reports (optional, but often good to ignore if generated)
 # **/figures/*.png
 # **/reports/*.json
+
+# Local runtime artifacts for UDSM preload stub
+**/.runtime/*.c
+**/.runtime/*.so
+**/.runtime/*.o
+**/.runtime/*.obj

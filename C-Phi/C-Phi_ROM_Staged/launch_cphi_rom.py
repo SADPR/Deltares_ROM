@@ -10,21 +10,50 @@ from cphi_rom_manager import RomManager
 
 
 def EnsureUdsmShowExtraStub():
-    """Build/load a small shim exporting show_extra_info_ for example64.so."""
-    stub_source = Path("/tmp/show_extra_stub.c")
-    stub_library = Path("/tmp/libshow_extra_stub.so")
+    """Build/load a shim exporting show_extra_info_ for example64.so in repo-local runtime."""
+    runtime_dir = Path(__file__).resolve().parent / ".runtime"
+    runtime_dir.mkdir(parents=True, exist_ok=True)
+    stub_source = runtime_dir / "show_extra_stub.c"
+    stub_library = runtime_dir / "libshow_extra_stub.so"
+    stub_code = "void show_extra_info_(void) {}\n"
 
-    if not stub_library.exists():
-        stub_source.write_text("void show_extra_info_(void) {}\n", encoding="ascii")
-        subprocess.run(
-            ["gcc", "-shared", "-fPIC", "-o", str(stub_library), str(stub_source)],
-            check=True,
-            capture_output=True,
-            text=True,
-        )
+    if not stub_source.exists() or stub_source.read_text(encoding="ascii") != stub_code:
+        stub_source.write_text(stub_code, encoding="ascii")
+
+    needs_rebuild = (
+        not stub_library.exists()
+        or stub_library.stat().st_mtime < stub_source.stat().st_mtime
+    )
+    if needs_rebuild:
+        try:
+            subprocess.run(
+                ["gcc", "-shared", "-fPIC", "-o", str(stub_library), str(stub_source)],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+        except FileNotFoundError as exc:
+            raise RuntimeError(
+                "Could not build UDSM preload stub because 'gcc' is not available. "
+                "Install gcc or provide a prebuilt '.runtime/libshow_extra_stub.so'."
+            ) from exc
+        except subprocess.CalledProcessError as exc:
+            raise RuntimeError(
+                "Failed to compile '.runtime/libshow_extra_stub.so'. "
+                f"gcc stderr:\n{exc.stderr}"
+            ) from exc
 
     ctypes.CDLL(str(stub_library), mode=ctypes.RTLD_GLOBAL)
     return str(stub_library)
+
+def ConfigureLdPreload(stub_library_path):
+    existing_preload = os.environ.get("LD_PRELOAD", "").strip()
+    if existing_preload:
+        preloads = existing_preload.split()
+        if stub_library_path not in preloads:
+            os.environ["LD_PRELOAD"] = f"{stub_library_path} {existing_preload}"
+    else:
+        os.environ["LD_PRELOAD"] = stub_library_path
 
 
 def CustomizeSimulation(cls, global_model, parameters, type_of_simulation="FOM"):
@@ -146,13 +175,17 @@ def GetRomManagerParameters():
     }}""")
 
 if __name__ == "__main__":
-    os.environ["LD_PRELOAD"] = EnsureUdsmShowExtraStub()
+    stub_library_path = EnsureUdsmShowExtraStub()
+    ConfigureLdPreload(stub_library_path)
+
+    SINGLE_POINT_MODE = True
+    SINGLE_CPHI_PAIR = [10000.0, 35.0]
 
     RUN_STAGE0 = True
     RUN_STAGE1 = True
     RUN_STAGE2 = True
     RUN_STAGE3 = True
-    RUN_STAGE4 = True
+    RUN_STAGE4 = False
 
     STAGE1_FORCE_RECOMPUTE = True
     STAGE3_FORCE_RECOMPUTE_FOM = True
@@ -161,14 +194,16 @@ if __name__ == "__main__":
     STAGE4_FORCE_RECOMPUTE_FOM = True
     STAGE4_FORCE_RECOMPUTE_ROM = True
 
-    SVD_TRUNCATION_TOLERANCE = 0.0 # <--- Exposed here now!
-    ITERATION_SNAPSHOTS_PER_SOLVE_STEP = 6  # keep a subset of Newton states (always includes last)
-    
-    # Updated to 9 to cleanly establish a 3x3 boundary grid 
-    mu_train = get_grid_params(3, 3)
-    
-    # NEW: Stage 4 Test point (Original Plaxis Benchmark: c=10000, phi=35)
-    mu_test = [[10000.0, 35.0],[11750.0, 33.5]]
+    SVD_TRUNCATION_TOLERANCE = 1e-6 # <--- Exposed here now!
+    ITERATION_SNAPSHOTS_PER_SOLVE_STEP = -1  # keep a subset of Newton states (always includes last)
+
+    if SINGLE_POINT_MODE:
+        mu_train = [SINGLE_CPHI_PAIR]
+        mu_test = [SINGLE_CPHI_PAIR]
+    else:
+        # 3x3 boundary grid
+        mu_train = get_grid_params(3, 3)
+        mu_test = [[10000.0, 35.0], [11750.0, 33.5]]
     
     rom_manager = RomManager(
         project_parameters_name="ProjectParameters_stage2.json",
@@ -180,8 +215,6 @@ if __name__ == "__main__":
         capture_nonconverged_snapshots_for_fom=True,
         iteration_snapshots_per_solve_step=ITERATION_SNAPSHOTS_PER_SOLVE_STEP,
     )
-
-    mu_train = get_grid_params(3, 3)
 
     if RUN_STAGE0:
         print("Stage 0: Plotting parameter space...")

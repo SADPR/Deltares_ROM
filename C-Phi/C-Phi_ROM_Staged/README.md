@@ -30,22 +30,37 @@ Files are named using a `_MuToken` based on the physics parameters:
 
 ## 🛠 How to Run
 
-Because the project utilizes an external **User Defined Soil Model (UDSM)** shared library (`example64.so`), you must use the `LD_PRELOAD` shim to handle a missing symbol (`show_extra_info_`).
+Because the project utilizes an external **User Defined Soil Model (UDSM)** shared library (`example64.so`), `launch_cphi_rom.py` now creates and loads the required shim **automatically** from a repo-local runtime folder:
+- `.runtime/show_extra_stub.c`
+- `.runtime/libshow_extra_stub.so`
 
-### 1. Initialize the Shim (Once per session)
-```bash
-cat > /tmp/show_extra_stub.c <<'EOC'
-void show_extra_info_(void) {}
-EOC
-gcc -shared -fPIC -o /tmp/libshow_extra_stub.so /tmp/show_extra_stub.c
-```
+No manual `LD_PRELOAD` steps are required anymore when using this launcher.
 
-### 2. Execute the ROM pipeline
+### 1. Execute the ROM pipeline
 ```bash
-LD_PRELOAD=/tmp/libshow_extra_stub.so \
 PYTHONPATH=/home/kratos/Kratos_Deltares/bin/Release:${PYTHONPATH} \
 python3 launch_cphi_rom.py
 ```
+
+Note:
+- The first run needs `gcc` available to compile the local shim library.
+
+### 2. Runtime modes in `launch_cphi_rom.py`
+
+The script now supports a **single-point mode**:
+
+- `SINGLE_POINT_MODE = True`
+  - Runs Stage 1/2/3 using only one `(c, phi)` pair:
+    - `SINGLE_CPHI_PAIR = [c_value, phi_value]`
+  - Useful for fast debugging and checking one specific case end-to-end.
+
+- `SINGLE_POINT_MODE = False`
+  - Uses the grid logic (`get_grid_params(3, 3)`) for training and verification.
+  - This is the multi-case mode (the previous behavior with several parameter pairs).
+
+Recompute behavior is controlled by the existing switches:
+- `RUN_STAGE*`
+- `STAGE*_FORCE_RECOMPUTE`
 
 ---
 
@@ -69,3 +84,21 @@ Unlike simple structural problems, slope failure is **path-dependent**. We don't
 
 ### The ROM Error Indicator
 The ROM is mathematically "stiff"—it wants to converge even when the physics say it shouldn't. We use a **Residual-based Error Indicator**. As soon as the ROM tries to project a state where the internal forces are widely unbalanced (high residual), the manager detects this spike and "trips" the simulation early, recording that specific point as the **Factor of Safety**.
+
+### Nonconverged solutions in Stage 1 (FOM snapshots)
+
+Stage 1 now supports storing **nonconverged Newton iteration states** to enrich the POD training set.
+
+- Enabled with:
+  - `capture_nonconverged_snapshots_for_fom=True`
+- Sampling controlled with:
+  - `ITERATION_SNAPSHOTS_PER_SOLVE_STEP`
+
+Interpretation of `ITERATION_SNAPSHOTS_PER_SOLVE_STEP`:
+- `<= 0`: keep all Newton iteration snapshots for each solve step.
+- `= 1`: keep only the last Newton iteration snapshot.
+- `> 1`: keep a subset of iterations, always including the last one.
+
+Notes:
+- These additional snapshots are collected from the nonlinear solve iterations and appended to the converged snapshot block.
+- The initial pre-iteration state is skipped by default; the sampling focuses on Newton iteration states (`iter_1 ... iter_last`).

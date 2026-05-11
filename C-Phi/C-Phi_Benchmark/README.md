@@ -94,20 +94,24 @@ In this folder, `example64.so` may fail to load with:
 
 This means the shared library was built expecting an additional symbol that is not present at runtime.
 
-#### Temporary workaround (for running now)
-Use a tiny preload shim that defines `show_extra_info_`:
+#### Automatic workaround in this repository
+`Kratos_stages.py` now auto-creates and loads a repo-local shim:
+
+- `.runtime/show_extra_stub.c`
+- `.runtime/libshow_extra_stub.so`
+
+So no manual `/tmp` creation and no manual `LD_PRELOAD` export is required when using this launcher.
+
+Run as:
 
 ```bash
-cat > /tmp/show_extra_stub.c <<'EOC'
-void show_extra_info_(void) {}
-EOC
-gcc -shared -fPIC -o /tmp/libshow_extra_stub.so /tmp/show_extra_stub.c
-
-cd /home/kratos/Deltares_ROM/C-Phi/Plaxis_CPhi_Benchmark
-LD_PRELOAD=/tmp/libshow_extra_stub.so \
+cd /home/kratos/Deltares_ROM/C-Phi/C-Phi_Benchmark
 PYTHONPATH=/home/kratos/Kratos_Deltares/bin/Release:${PYTHONPATH} \
 python3 Kratos_stages.py
 ```
+
+Note:
+- First run needs `gcc` available to compile the local shim library.
 
 #### Clean long-term fix
 Rebuild or provide `example64.so` so it exports or links the missing symbol (`show_extra_info_`) directly, without requiring `LD_PRELOAD`.
