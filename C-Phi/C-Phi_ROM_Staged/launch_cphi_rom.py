@@ -181,7 +181,7 @@ if __name__ == "__main__":
     SINGLE_POINT_MODE = True
     SINGLE_CPHI_PAIR = [10000.0, 35.0]
 
-    RUN_STAGE0 = True
+    RUN_STAGE0 = False
     RUN_STAGE1 = True
     RUN_STAGE2 = True
     RUN_STAGE3 = True
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     STAGE4_FORCE_RECOMPUTE_FOM = True
     STAGE4_FORCE_RECOMPUTE_ROM = True
 
-    SVD_TRUNCATION_TOLERANCE = 1e-6 # <--- Exposed here now!
+    SVD_TRUNCATION_TOLERANCE = 1e-8 # <--- Exposed here now!
     ITERATION_SNAPSHOTS_PER_SOLVE_STEP = -1  # keep a subset of Newton states (always includes last)
 
     if SINGLE_POINT_MODE:
