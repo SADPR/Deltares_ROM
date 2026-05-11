@@ -1,10 +1,30 @@
+import ctypes
 import json
 import os
+import subprocess
 from pathlib import Path
 import KratosMultiphysics
 import numpy as np
 from matplotlib import pyplot as plt
 from cphi_rom_manager import RomManager
+
+
+def EnsureUdsmShowExtraStub():
+    """Build/load a small shim exporting show_extra_info_ for example64.so."""
+    stub_source = Path("/tmp/show_extra_stub.c")
+    stub_library = Path("/tmp/libshow_extra_stub.so")
+
+    if not stub_library.exists():
+        stub_source.write_text("void show_extra_info_(void) {}\n", encoding="ascii")
+        subprocess.run(
+            ["gcc", "-shared", "-fPIC", "-o", str(stub_library), str(stub_source)],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+    ctypes.CDLL(str(stub_library), mode=ctypes.RTLD_GLOBAL)
+    return str(stub_library)
 
 
 def CustomizeSimulation(cls, global_model, parameters, type_of_simulation="FOM"):
@@ -31,6 +51,10 @@ def UpdateMaterialParametersFile(materials_file_name, mu=None):
 
     with open(materials_file_name, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
+
+def UpdateProjectParameters(parameters, mu=None, sim_type=None):
+    # Keep FOM/ROM solver settings identical (read directly from ProjectParameters_stage2.json).
+    return parameters
 
 def get_grid_params(c_points=3, phi_points=3):
     # Cohesion from 10000 to 15000 Pa (guarantees Stage 1 baseline stability)
@@ -67,6 +91,17 @@ def plot_mu_values(mu_train, mu_test, filename="figures/sampling_cphi.png", titl
     plt.close(fig)
 
 def plot_verification_results(mu_list, fom_factors, rom_factors):
+    valid_pairs = [
+        (fom, rom) for fom, rom in zip(fom_factors, rom_factors)
+        if fom is not None and rom is not None
+    ]
+    if not valid_pairs:
+        print("No valid converged FOM/ROM pairs available for parity plot.")
+        return
+
+    fom_factors = [pair[0] for pair in valid_pairs]
+    rom_factors = [pair[1] for pair in valid_pairs]
+
     fig, ax = plt.subplots(figsize=(7, 7))
     
     # Parity line
@@ -111,22 +146,23 @@ def GetRomManagerParameters():
     }}""")
 
 if __name__ == "__main__":
-    os.environ["LD_PRELOAD"] = "/tmp/libshow_extra_stub.so"
-    
-    RUN_STAGE0 = False     
-    RUN_STAGE1 = False
-    RUN_STAGE2 = True  
+    os.environ["LD_PRELOAD"] = EnsureUdsmShowExtraStub()
+
+    RUN_STAGE0 = True
+    RUN_STAGE1 = True
+    RUN_STAGE2 = True
     RUN_STAGE3 = True
     RUN_STAGE4 = True
-    
-    STAGE1_FORCE_RECOMPUTE = False    
-    STAGE3_FORCE_RECOMPUTE_FOM = False
+
+    STAGE1_FORCE_RECOMPUTE = True
+    STAGE3_FORCE_RECOMPUTE_FOM = True
     STAGE3_FORCE_RECOMPUTE_ROM = True
-    
-    STAGE4_FORCE_RECOMPUTE_FOM = False
+
+    STAGE4_FORCE_RECOMPUTE_FOM = True
     STAGE4_FORCE_RECOMPUTE_ROM = True
-    
-    SVD_TRUNCATION_TOLERANCE = 1e-3 # <--- Exposed here now!
+
+    SVD_TRUNCATION_TOLERANCE = 0.0 # <--- Exposed here now!
+    ITERATION_SNAPSHOTS_PER_SOLVE_STEP = 6  # keep a subset of Newton states (always includes last)
     
     # Updated to 9 to cleanly establish a 3x3 boundary grid 
     mu_train = get_grid_params(3, 3)
@@ -138,8 +174,11 @@ if __name__ == "__main__":
         project_parameters_name="ProjectParameters_stage2.json",
         general_rom_manager_parameters=GetRomManagerParameters(),
         UpdateMaterialParametersFile=UpdateMaterialParametersFile,
+        UpdateProjectParameters=UpdateProjectParameters,
         CustomizeSimulation=CustomizeSimulation,
         mu_names=["cohesion", "friction_angle"],
+        capture_nonconverged_snapshots_for_fom=True,
+        iteration_snapshots_per_solve_step=ITERATION_SNAPSHOTS_PER_SOLVE_STEP,
     )
 
     mu_train = get_grid_params(3, 3)
@@ -186,16 +225,31 @@ if __name__ == "__main__":
             mu_str = f"({case['mu'][0]:.0f}, {case['mu'][1]:.1f})"
             fom_val = case['critical_factor_fom']
             rom_val = case['critical_factor_rom']
+            rom_attempted = case.get("critical_factor_rom_attempted")
             err = case['relative_l2_error_critical_factor_percent']
-            
-            fom_fos.append(fom_val)
-            rom_fos.append(rom_val)
-            
+
+            if fom_val is not None and rom_val is not None:
+                fom_fos.append(fom_val)
+                rom_fos.append(rom_val)
+
+            fom_str = f"{fom_val:.4f}" if fom_val is not None else "N/A"
+            if rom_val is not None:
+                rom_str = f"{rom_val:.4f}"
+            elif rom_attempted is not None:
+                rom_str = f"{rom_attempted:.4f}*"
+            else:
+                rom_str = "N/A"
             err_str = f"{err:.2f}%" if err is not None else "N/A"
-            print(f"{i:<8} | {mu_str:<20} | {fom_val:<10.4f} | {rom_val:<10.4f} | {err_str:<8}")
+            print(f"{i:<8} | {mu_str:<20} | {fom_str:<10} | {rom_str:<10} | {err_str:<8}")
         
         print("="*60)
-        print(f"Global Relative Error: {verification_summary['global_relative_l2_error_critical_factor_percent']:.4f}%")
+        global_err = verification_summary["global_relative_l2_error_critical_factor_percent"]
+        if global_err is None:
+            print("Global Relative Error: N/A (insufficient converged ROM cases)")
+        else:
+            print(f"Global Relative Error: {global_err:.4f}%")
+        print(f"Failed ROM cases: {verification_summary.get('num_failed_rom_cases', 'N/A')}")
+        print("* ROM FoS shown with '*' is attempted (nonconverged) value.")
         print("="*60 + "\n")
         
         plot_verification_results(mu_train, fom_fos, rom_fos)
@@ -228,6 +282,14 @@ if __name__ == "__main__":
             mu_str = f"({case['mu'][0]:.0f}, {case['mu'][1]:.1f})"
             fom_val = case['critical_factor_fom']
             rom_val = case['critical_factor_rom']
-            print(f"Test_{i:<3} | {mu_str:<20} | {fom_val:<10.4f} | {rom_val:<10.4f}")
+            rom_attempted = case.get("critical_factor_rom_attempted")
+            fom_str = f"{fom_val:.4f}" if fom_val is not None else "N/A"
+            if rom_val is not None:
+                rom_str = f"{rom_val:.4f}"
+            elif rom_attempted is not None:
+                rom_str = f"{rom_attempted:.4f}*"
+            else:
+                rom_str = "N/A"
+            print(f"Test_{i:<3} | {mu_str:<20} | {fom_str:<10} | {rom_str:<10}")
         
         print("="*60 + "\n")
